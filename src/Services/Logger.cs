@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Services
 {
@@ -22,6 +19,50 @@ namespace Services
     /// </summary>
     public class Logger
     {
+        private IMessageLogger _logger;
+
+        /// <summary>
+        /// Suggested constructor
+        /// </summary>
+        /// <param name="logType"></param>
+        public Logger(LogType logType)
+        {
+            switch (logType)
+            {
+                case LogType.Console:
+                    _logger = new ConsoleLogger();
+                    break;
+
+                case LogType.Queue:
+                    _logger = new QueueLogger();
+                    break;
+
+                default:
+                    throw new ArgumentException("Unknown log type", nameof(logType));
+            }
+        }
+
+        /// <summary>
+        /// Alternative constructor
+        /// Does not require Enums
+        /// Injectable service
+        /// </summary>
+        /// <param name="logger"></param>
+        public Logger(IMessageLogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger), "Message logger cannot be passed null");
+            }
+            _logger = logger;
+        }
+
+        public void Log(string message)
+        {
+            _logger.Log(message);
+        }
+
+        [Obsolete("Please use Log method overload with the single parameter", true)]
         public void Log(string message, LogType logType)
         {
             switch (logType)
@@ -36,8 +77,7 @@ namespace Services
             }
         }
     }
-
-
+    
     public enum LogType
     {
         Console,
